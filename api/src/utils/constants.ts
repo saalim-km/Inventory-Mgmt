@@ -1,0 +1,63 @@
+// constants.ts
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  INTERNAL_SERVER_ERROR: 500,
+};
+
+
+export const SUCCESS_MESSAGES = {
+  ITEM_ADDED: 'Inventory item added successfully.',
+  ITEM_UPDATED: 'Inventory item updated successfully.',
+  ITEM_DELETED: 'Inventory item deleted successfully.',
+  STOCK_UPDATED: 'Stock quantity updated successfully.',
+  STOCK_REPLENISHED: 'Stock replenished successfully.',
+  STOCK_DEDUCTED: 'Stock deducted successfully.',
+  CATEGORY_CREATED: 'Category created successfully.',
+  CATEGORY_UPDATED: 'Category updated successfully.',
+  CATEGORY_DELETED: 'Category deleted successfully.',
+  SUPPLIER_ADDED: 'Supplier added successfully.',
+  SUPPLIER_UPDATED: 'Supplier updated successfully.',
+  SUPPLIER_DELETED: 'Supplier deleted successfully.',
+  ORDER_PLACED: 'Order placed successfully.',
+  ORDER_UPDATED: 'Order updated successfully.',
+  ORDER_CANCELLED: 'Order cancelled successfully.',
+  USER_CREATED: 'User account created successfully.',
+  USER_UPDATED: 'User account updated successfully.',
+  USER_DELETED: 'User account deleted successfully.',
+  LOGIN_SUCCESS: 'Logged in successfully.',
+  LOGOUT_SUCCESS: 'Logged out successfully.',
+  OPERATION_SUCCESS: 'Operation completed successfully.',
+  DATA_RETRIEVED: 'Data retrieved successfully.',
+};
+
+
+export const ERROR_MESSAGES = {
+  ITEM_NOT_FOUND: 'Inventory item not found.',
+  ITEM_DELETED : "Item deleted",
+  ITEM_ALREADY_EXISTS: 'Inventory item already exists.',
+  INSUFFICIENT_STOCK: 'Insufficient stock to complete the request.',
+  INVALID_QUANTITY: 'Invalid quantity specified.',
+  CATEGORY_NOT_FOUND: 'Category not found.',
+  CATEGORY_ALREADY_EXISTS: 'Category already exists.',
+  SUPPLIER_NOT_FOUND: 'Supplier not found.',
+  SUPPLIER_ALREADY_EXISTS: 'Supplier already exists.',
+  ORDER_NOT_FOUND: 'Order not found.',
+  ORDER_ALREADY_COMPLETED: 'Order has already been completed.',
+  INVALID_ORDER_STATUS: 'Invalid order status.',
+  USER_NOT_FOUND: 'User not found.',
+  EMAIL_ALREADY_EXISTS: 'Email already exists.',
+  UNAUTHORIZED_USER: 'You are not authorized to perform this action.',
+  INVALID_CREDENTIALS: 'Invalid login credentials.',
+  TOKEN_EXPIRED: 'Authentication token has expired.',
+  INVALID_TOKEN: 'Invalid authentication token.',
+  MISSING_REQUIRED_FIELDS: 'Required fields are missing.',
+  SERVER_ERROR: 'An unexpected error occurred. Please try again later.',
+  VALIDATION_ERROR: 'A validation error occurred.',
+  ROUTE_NOT_FOUND: 'Route not found.',
+};
