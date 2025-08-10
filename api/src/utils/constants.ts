@@ -51,6 +51,7 @@ export const ERROR_MESSAGES = {
   ORDER_ALREADY_COMPLETED: 'Order has already been completed.',
   INVALID_ORDER_STATUS: 'Invalid order status.',
   USER_NOT_FOUND: 'User not found.',
+  USER_ALREADY_EXISTS: 'User already exists.',
   EMAIL_ALREADY_EXISTS: 'Email already exists.',
   UNAUTHORIZED_USER: 'You are not authorized to perform this action.',
   INVALID_CREDENTIALS: 'Invalid login credentials.',

@@ -18,7 +18,6 @@ export class Inventory {
   @Prop({ required: true, min: 0 })
   price: number;
 
-  // These will be automatically managed by Mongoose
   createdAt?: Date;
   updatedAt?: Date;
 }
