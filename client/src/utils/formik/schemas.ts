@@ -63,3 +63,37 @@ export const authSchema = {
       .oneOf([Yup.ref("password")], "Passwords must match"),
   }),
 }
+
+export const customerValidationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+  address: Yup.string().required("Address is required"),
+  mobile: Yup.string()
+    .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+    .required("Mobile number is required"),
+});
+
+
+export const saleValidationSchema = Yup.object().shape({
+  date: Yup.date()
+    .required("Sale date is required")
+    .max(new Date(), "Future dates are not allowed"),
+  customerName: Yup.string().required("Customer name is required"),
+  items: Yup.array()
+    .of(
+      Yup.object().shape({
+        name: Yup.string().required("Item name is required"),
+        quantity: Yup.number()
+          .min(1, "Quantity must be at least 1")
+          .required("Quantity is required"),
+      })
+    )
+    .min(1, "At least one item must be selected"),
+});
+
+
+export const itemValidationSchema = Yup.object().shape({
+  name: Yup.string().required("name is required"),
+  quantity: Yup.number().required("Quantity is required").min(0),
+  price: Yup.number().required("Price is required").min(0),
+  description: Yup.string().required("description is required"),
+});

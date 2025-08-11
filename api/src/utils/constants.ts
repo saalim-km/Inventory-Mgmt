@@ -10,8 +10,10 @@ export const HTTP_STATUS = {
   INTERNAL_SERVER_ERROR: 500,
 };
 
-
 export const SUCCESS_MESSAGES = {
+  ITEM_REPORT_CREATED : "Item report created",
+  SALES_REPORT_GENERATED : "Sales report generate",
+  REFRESH_TOKEN_SUCCESS: "Session refreshed. You're all set.",
   ITEM_ADDED: 'Inventory item added successfully.',
   ITEM_UPDATED: 'Inventory item updated successfully.',
   ITEM_DELETED: 'Inventory item deleted successfully.',
@@ -36,10 +38,10 @@ export const SUCCESS_MESSAGES = {
   DATA_RETRIEVED: 'Data retrieved successfully.',
 };
 
-
 export const ERROR_MESSAGES = {
+  UNAUTHORIZED_ACCESS: 'Unauthorized access.',
   ITEM_NOT_FOUND: 'Inventory item not found.',
-  ITEM_DELETED : "Item deleted",
+  ITEM_DELETED: 'Item deleted',
   ITEM_ALREADY_EXISTS: 'Inventory item already exists.',
   INSUFFICIENT_STOCK: 'Insufficient stock to complete the request.',
   INVALID_QUANTITY: 'Invalid quantity specified.',

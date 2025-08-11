@@ -15,8 +15,6 @@ export class Customer {
   @Prop({
     required: true,
     trim: true,
-    match: [/^\d{10}$/, 'Mobile number must be exactly 10 digits'],
-    unique: true,
   })
   mobile: string;
 }

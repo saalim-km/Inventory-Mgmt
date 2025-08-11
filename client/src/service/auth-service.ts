@@ -1,5 +1,5 @@
 import { AxiosInstance } from "../api/axios-instance";
-import type { AxiosResponse, LoginResponse, signupInput } from "../types/auth.type";
+import type { AxiosResponse, BaseResponse, signupInput } from "../types/auth.type";
 
 
 export const authService = {
@@ -8,7 +8,7 @@ export const authService = {
         return response.data;
     },
 
-    async login(userData: { email: string; password: string }) : Promise<LoginResponse> {
+    async login(userData: { email: string; password: string }) : Promise<BaseResponse<{_id:string,name:string,email:string}>> {
         const response = await AxiosInstance.post('/auth/login', userData);
         return response.data;
     },

@@ -1,17 +1,43 @@
-import { IsDateString, IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  ValidateNested,
+  IsInt,
+  Min,
+  IsNumber,
+  IsMongoId,
+  ArrayMinSize
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class CreateSaleDto {
-  @IsDateString()
-  date: string; // ISO 8601 format: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ
-
-  @IsInt()
-  @IsPositive()
-  quantity: number;
+class ItemDto {
+  @IsMongoId()
+  _id: string;
 
   @IsString()
-  @IsOptional()
-  customerName?: string; // Optional if it's a cash sale
+  name: string;
 
-  @IsOptional()
-  cash?: boolean; // true if it's a cash sale, false or undefined otherwise
+  @IsInt()
+  @Min(0)
+  quantity: number;
+
+  @IsNumber()
+  price: number;
+
+  @IsInt()
+  @Min(0)
+  stock: number;
+}
+
+export class CreateOrderDto {
+  @IsString()
+  customerName: string;
+
+  @IsDateString()
+  date: string;
+
+  @ValidateNested({ each: true })
+  @Type(() => ItemDto)
+  @ArrayMinSize(1)
+  items: ItemDto[];
 }

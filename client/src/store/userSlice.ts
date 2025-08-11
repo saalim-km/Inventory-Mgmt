@@ -20,6 +20,7 @@ const clientSlice = createSlice({
     reducers : {
         userLogin : (state , action) => {
             state.user = action.payload
+            localStorage.setItem('userSession',JSON.stringify(action.payload))
         },
         userLogout : (state)=> {
             state.user = null;

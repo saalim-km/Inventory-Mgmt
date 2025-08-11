@@ -5,4 +5,4 @@ export class CustomError extends Error {
         this.message = message;
         this.statusCode = statusCode || 500;
     }
-}
+}                                                       

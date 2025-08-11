@@ -3,17 +3,19 @@
 import React, { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { toast } from "sonner";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Label } from "../components/ui/label";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { authSchema } from "../utils/formik/schemas";
 import { handleError } from "../utils/error-handler";
 import { userLogin } from "../store/userSlice";
 import { useLogin, useSignup } from "../hook/useAuth";
-import { Input } from "./ui/input";
+import { Input } from "../components/ui/input";
+import { useDispatch } from "react-redux";
 
 export function AuthPage() {
   const [isLogin, setIsLogin] = React.useState(true);
+  const dispatch = useDispatch();
   const { mutate: signup } = useSignup();
   const { mutate: login } = useLogin();
 
@@ -26,10 +28,11 @@ export function AuthPage() {
 
   const handleSubmit = (values: typeof initialValues) => {
     if (isLogin) {
-      login(values,{
+      login({email : values.email , password:values.password},{
         onSuccess:(data)=> {
           toast.success(data.message);
-          userLogin(data.user)
+          console.log('kdfj;akljkfdla',data.data);
+          dispatch(userLogin(data.data))
         },
         onError : (err)=> {
           handleError(err)
@@ -47,6 +50,7 @@ export function AuthPage() {
         },
         onError: (err)=> {
           handleError(err)
+
         }
       })
     }
@@ -139,7 +143,6 @@ export function AuthPage() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isSubmitting}
                 >
                   {isLogin ? "Sign In" : "Sign Up"}
                 </Button>

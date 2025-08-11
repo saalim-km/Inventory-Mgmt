@@ -16,11 +16,15 @@ export class CustomerService {
   // Create a new customer
   async create(dto: CreateCustomerDto) {
     const isCustomerExist = await this._customerModel.findOne({
-      name: new RegExp(dto.name.trim(), 'i'),
+      $or: [
+        { name: new RegExp(dto.name.trim(), 'i') },
+        { mobile: dto.mobile.trim() },
+      ],
     });
+
     if (isCustomerExist)
       throw new CustomError(
-        ERROR_MESSAGES.USER_ALREADY_EXISTS,
+        'User already exists or mobile already connected to another user',
         HTTP_STATUS.CONFLICT,
       );
     const createdCustomer = await this._customerModel.create(dto);
@@ -28,9 +32,24 @@ export class CustomerService {
   }
 
   // Get all customers with optional search
-  async findAll(search?: string) {
-    const filter = search ? { name: new RegExp(search.trim(), 'i') } : {};
-    return await this._customerModel.find(filter).exec();
+  async findAll(query: { page: number; limit: number }) {
+    console.log('query in service', query);
+    const { limit, page } = query;
+    const skip = (page - 1) * limit;
+    console.log(skip, limit);
+    const [customers, count] = await Promise.all([
+      this._customerModel
+        .find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._customerModel.countDocuments().exec(),
+    ]);
+    return {
+      data: customers,
+      total: count,
+    };
   }
 
   // Get a single customer by ID
