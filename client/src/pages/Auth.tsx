@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { toast } from "sonner";
 import { Label } from "../components/ui/label";
@@ -75,7 +75,7 @@ export function AuthPage() {
             validationSchema={isLogin ? authSchema.login : authSchema.register}
             onSubmit={handleSubmit}
           >
-            {({ isSubmitting }) => (
+            {() => (
               <Form className="space-y-4">
                 {!isLogin && (
                   <div className="space-y-2">
