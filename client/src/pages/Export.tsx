@@ -18,7 +18,6 @@ export const ExportPage = () => {
   const [toDate, setToDate] = useState<Date | null>(null);
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
 
   useEffect(() => {
     async function loadCustomers() {
