@@ -4,7 +4,7 @@ import { IsValidName } from "src/utils/custom-decorators";
 export class CreateInventoryDto {
   @IsString()
   @IsValidName()
-  @MaxLength(10)
+  @MaxLength(20)
   name: string;
 
   @IsString()

@@ -1,32 +1,10 @@
-import * as Yup from "yup"
-
-const validEmailProviders = [
-  "gmail.com",
-  "yahoo.com",
-  "hotmail.com",
-  "outlook.com",
-  "icloud.com",
-  "aol.com",
-  "protonmail.com",
-  "zoho.com",
-  "mail.com",
-  "gmx.com",
-]
+import * as Yup from "yup";
 
 export const authSchema = {
   login: Yup.object().shape({
     email: Yup.string()
       .email("Invalid email address")
-      .required("Email is required")
-      .test(
-        "valid-provider",
-        "Please use a valid email provider",
-        (value) => {
-          if (!value) return false
-          const domain = value.split("@")[1]
-          return validEmailProviders.includes(domain)
-        }
-      ),
+      .required("Email is required"),
     password: Yup.string()
       .required("Password is required")
       .min(8, "Password must be at least 8 characters")
@@ -38,19 +16,15 @@ export const authSchema = {
   register: Yup.object().shape({
     fullName: Yup.string()
       .required("Full name is required")
-      .min(2, "Full name must be at least 2 characters"),
+      .min(2, "Full name must be at least 2 characters")
+      .max(50, "Full name cannot exceed 50 characters")
+      .matches(
+        /^[a-zA-Z\s]*$/,
+        "Full name can only contain letters and spaces"
+      ),
     email: Yup.string()
       .email("Invalid email address")
-      .required("Email is required")
-      .test(
-        "valid-provider",
-        "Please use a valid email provider",
-        (value) => {
-          if (!value) return false
-          const domain = value.split("@")[1]
-          return validEmailProviders.includes(domain)
-        }
-      ),
+      .required("Email is required"),
     password: Yup.string()
       .required("Password is required")
       .min(8, "Password must be at least 8 characters")
@@ -62,16 +36,25 @@ export const authSchema = {
       .required("Please confirm your password")
       .oneOf([Yup.ref("password")], "Passwords must match"),
   }),
-}
+};
 
 export const customerValidationSchema = Yup.object({
-  name: Yup.string().required("Name is required"),
-  address: Yup.string().required("Address is required"),
+  name: Yup.string()
+    .required("Full name is required")
+    .min(2, "Full name must be at least 2 characters")
+    .max(50, "Full name cannot exceed 50 characters")
+    .matches(/^[a-zA-Z\s]*$/, "Name can only contain letters and spaces"),
+  address: Yup.string()
+    .required("Address is required")
+    .min(10, "Address must be at least 10 characters")
+    .matches(
+      /^[a-zA-Z0-9\s,.-]+$/,
+      "Address can only contain letters, numbers, spaces, commas, periods, and hyphens"
+    ),
   mobile: Yup.string()
     .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
     .required("Mobile number is required"),
 });
-
 
 export const saleValidationSchema = Yup.object().shape({
   date: Yup.date()
@@ -89,7 +72,6 @@ export const saleValidationSchema = Yup.object().shape({
     )
     .min(1, "At least one item must be selected"),
 });
-
 
 export const itemValidationSchema = Yup.object().shape({
   name: Yup.string().required("name is required"),

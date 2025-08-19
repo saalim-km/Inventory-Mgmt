@@ -1,16 +1,23 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Sale, SaleDocument } from '../schema/sale.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { CreateOrderDto } from '../dto/create-sales.dto';
 import { UpdateOrderDto } from '../dto/update-sales.dto';
 import { CustomError } from 'src/utils/custom-error';
 import { ERROR_MESSAGES, HTTP_STATUS } from 'src/utils/constants';
-import { GetSalesQueryDto, GetSalesReportDto } from '../dto/get-sales.dto';
+import ExcelJS from 'exceljs';
+import {
+  ExportQueryParamsDto,
+  GetSalesQueryDto,
+  GetSalesReportDto,
+} from '../dto/get-sales.dto';
 import {
   Inventory,
   InventoryDocument,
 } from 'src/inventory/schema/inventory.schema';
+import PDFDocument from 'pdfkit';
+import type { Response } from 'express';
 
 @Injectable()
 export class SalesService {
@@ -78,18 +85,15 @@ export class SalesService {
   }
 
   async generateCustomerLedger(customerName: string, dto: GetSalesQueryDto) {
-    console.log(customerName,dto.limit);
+    console.log(customerName, dto.limit);
     const { limit, page } = dto;
     const skip = (page - 1) * limit;
 
     const [sales, total] = await Promise.all([
-      this._salesModel
-        .find({ customerName })
-        .skip(skip)
-        .limit(limit),
+      this._salesModel.find({ customerName }).skip(skip).limit(limit),
       this._salesModel.countDocuments({ customerName }),
     ]);
-    console.log(sales,total);
+    console.log(sales, total);
 
     const data = sales.map((sale) => ({
       date: sale.date,
@@ -101,8 +105,140 @@ export class SalesService {
     }));
 
     return {
-      data : data,
-      total : total
-    }
+      data: data,
+      total: total,
+    };
+  }
+
+  async getSalesForExport(input: ExportQueryParamsDto) {
+    const { customer, from, to } = input;
+    const query: FilterQuery<SaleDocument> = {
+      customerName: customer.trim(),
+      $and: [{ date: { $gte: from } }, { date: { $lte: to } }],
+    };
+    return await this._salesModel.find(query).lean();
+  }
+
+  async generatePdf(res: Response, sales: SaleDocument[]) {
+    const doc = new PDFDocument({ margin: 30 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="sales-report.pdf"`,
+    );
+
+    doc.pipe(res);
+
+    doc.fontSize(16).text('Sales Report', { align: 'center' });
+    doc.moveDown();
+
+    sales.forEach((sale, index) => {
+      const total = sale.items.reduce(
+        (sum, i) => sum + i.price * i.quantity,
+        0,
+      );
+
+      doc
+        .fontSize(12)
+        .text(`Date: ${new Date(sale.date).toLocaleDateString()}`);
+      doc.text(`Customer: ${sale.customerName}`);
+      doc.moveDown(0.5);
+
+      // Table Header
+      doc.font('Helvetica-Bold');
+      doc.text('Item', 60);
+      doc.text('Qty', 200);
+      doc.text('Price', 250);
+      doc.text('Subtotal', 320);
+      doc.moveDown(0.3);
+      doc.font('Helvetica').moveTo(60, doc.y).lineTo(500, doc.y).stroke();
+
+      // Table Rows
+      sale.items.forEach((item) => {
+        const subtotal = item.price * item.quantity;
+        doc.text(item.name, 60);
+        doc.text(item.quantity.toString(), 200);
+        doc.text(`₹${item.price.toFixed(2)}`, 250);
+        doc.text(`₹${subtotal.toFixed(2)}`, 320);
+        doc.moveDown(0.2);
+      });
+
+      // Total
+      doc.moveDown(0.3);
+      doc
+        .font('Helvetica-Bold')
+        .text(`Total: ₹${total.toFixed(2)}`, { align: 'right' });
+      doc.moveDown(1);
+    });
+
+    doc.end();
+  }
+
+  async exportExcel(res: Response, sales: SaleDocument[]) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sales Report');
+
+    worksheet.columns = [
+      { header: 'Date', key: 'date', width: 15 },
+      { header: 'Customer', key: 'customerName', width: 25 },
+      { header: 'Items', key: 'items', width: 40 },
+      { header: 'Total Amount', key: 'total', width: 20 },
+    ];
+
+    sales.forEach((sale) => {
+      worksheet.addRow({
+        date: new Date(sale.date).toLocaleDateString(),
+        customerName: sale.customerName,
+        items: sale.items.map((i) => `${i.name} (${i.quantity})`).join(', '),
+        total: sale.items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      });
+    });
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="sales-report.xlsx"`,
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  }
+
+  async exportPrint(res: Response, sales: SaleDocument[]) {
+     const html = `
+      <html>
+        <head>
+          <title>Sales Report</title>
+          <style>
+            body { font-family: sans-serif; margin: 2rem; }
+            .sale-entry { margin-bottom: 2rem; }
+            hr { border: none; border-top: 1px solid #ccc; }
+            h1 { text-align: center; }
+          </style>
+        </head>
+        <body>
+          <h1>Sales Report</h1>
+          ${sales.map(sale => {
+            const total = sale.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+            return `
+              <div class="sale-entry">
+                <p><strong>Date:</strong> ${new Date(sale.date).toLocaleDateString()}</p>
+                <p><strong>Customer:</strong> ${sale.customerName}</p>
+                <p><strong>Items:</strong> ${sale.items.map(i => `${i.name} (${i.quantity})`).join(", ")}</p>
+                <p><strong>Total:</strong> ₹${total.toFixed(2)}</p>
+                <hr />
+              </div>
+            `;
+          }).join("")}
+        </body>
+      </html>
+    `;
+
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
   }
 }

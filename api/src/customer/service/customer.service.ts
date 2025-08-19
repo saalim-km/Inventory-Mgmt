@@ -16,17 +16,15 @@ export class CustomerService {
   // Create a new customer
   async create(dto: CreateCustomerDto) {
     const isCustomerExist = await this._customerModel.findOne({
-      $or: [
-        { name: new RegExp(dto.name.trim(), 'i') },
-        { mobile: dto.mobile.trim() },
-      ],
+      $or: [{ mobile: dto.mobile.trim() }],
     });
 
-    if (isCustomerExist)
+    if (isCustomerExist) {
       throw new CustomError(
-        'User already exists or mobile already connected to another user',
+        'Mobile already connected to another user',
         HTTP_STATUS.CONFLICT,
       );
+    }
     const createdCustomer = await this._customerModel.create(dto);
     return createdCustomer;
   }

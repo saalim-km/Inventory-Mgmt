@@ -8,7 +8,6 @@ import {
   exportSalesToPDF,
   fetchCustomer,
   getPrintableSalesReport,
-  sendSalesReportByEmail,
 } from "../service/services";
 import { DatePicker } from "../components/ui/date-picker";
 import { Button } from "../components/ui/button";
@@ -35,20 +34,17 @@ export const ExportPage = () => {
 
   const handleExport = async (type: "excel" | "pdf" | "email" | "print") => {
     if (!fromDate || !toDate) return toast.error("Select date range");
+    if (!selectedCustomer) return toast.error("Select a customer");
 
     const from = fromDate.toISOString();
     const to = toDate.toISOString();
     const customer = selectedCustomer || undefined;
-
+    console.log(from,to,customer);
     try {
       if (type === "excel") {
         await exportSalesToExcel(from, to, customer);
       } else if (type === "pdf") {
         await exportSalesToPDF(from, to, customer);
-      } else if (type === "email") {
-        if (!email) return toast.error("Please enter an email");
-        await sendSalesReportByEmail(from, to, customer || null, email);
-        toast.success("Report emailed successfully!");
       } else if (type === "print") {
         await getPrintableSalesReport(from, to, customer);
       }
@@ -84,13 +80,6 @@ export const ExportPage = () => {
                 </option>
               ))}
             </select>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Recipient Email"
-              className="border rounded p-2"
-            />
           </div>
 
           {/* Export Buttons */}
@@ -99,9 +88,6 @@ export const ExportPage = () => {
               Export as Excel
             </Button>
             <Button onClick={() => handleExport("pdf")}>Export as PDF</Button>
-            <Button onClick={() => handleExport("email")}>
-              Send via Email
-            </Button>
             <Button onClick={() => handleExport("print")}>Print</Button>
           </div>
         </div>

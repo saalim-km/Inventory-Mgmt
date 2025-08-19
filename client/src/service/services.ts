@@ -109,7 +109,7 @@ export const fetchItemSalesAndStock = async (options: { limit: number, page: num
 };
 
 export const exportSalesToExcel = async (from: string, to: string, customer?: string) => {
-    const response = await AxiosInstance.get("/export/excel", {
+    const response = await AxiosInstance.get("/sale/export/excel", {
         params: { from, to, customer },
         responseType: "blob",
     });
@@ -124,7 +124,7 @@ export const exportSalesToExcel = async (from: string, to: string, customer?: st
 
 // Fetch and download PDF
 export const exportSalesToPDF = async (from: string, to: string, customer?: string) => {
-    const response = await AxiosInstance.get("/export/pdf", {
+    const response = await AxiosInstance.get("/sale/export/pdf", {
         params: { from, to, customer },
         responseType: "blob",
     });
@@ -137,25 +137,10 @@ export const exportSalesToPDF = async (from: string, to: string, customer?: stri
     link.remove();
 };
 
-// Send report via Email
-export const sendSalesReportByEmail = async (
-    from: string,
-    to: string,
-    customer: string | null,
-    email: string
-) => {
-    const response = await AxiosInstance.post("/export/email", {
-        from,
-        to,
-        customer,
-        email,
-    });
-    return response.data;
-};
 
 // Get Printable HTML
 export const getPrintableSalesReport = async (from: string, to: string, customer?: string) => {
-    const response = await AxiosInstance.get("/export/print", {
+    const response = await AxiosInstance.get("/sale/export/print", {
         params: { from, to, customer },
     });
     const printWindow = window.open("", "_blank");

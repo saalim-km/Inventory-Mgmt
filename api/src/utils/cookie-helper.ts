@@ -11,7 +11,7 @@ export const setAuthCookies = (res : Response , accessToken : string , refreshTo
     res.cookie(refreshTokenName , refreshToken , {
         httpOnly : true,
         secure : process.env.NODE_ENV === "production",
-        sameSite : "strict"
+        sameSite : "none"
     });    
 }
 

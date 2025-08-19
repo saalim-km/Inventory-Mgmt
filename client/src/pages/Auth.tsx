@@ -47,6 +47,7 @@ export function AuthPage() {
       },{
         onSuccess : (data)=> {
           toast.success(data.message)
+          setIsLogin(true)
         },
         onError: (err)=> {
           handleError(err)
