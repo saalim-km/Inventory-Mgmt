@@ -52,15 +52,3 @@ This is a web application designed to manage inventory, sales, and customer info
     ```
 
 2.  Open your web browser and go to `http://localhost:[port]` to use the application.
-
-## Evaluation Criteria
-
-[cite_start]The project will be evaluated based on the following criteria[cite: 31]:
-
--   [cite_start]**Functionality**: Successful implementation of all specified features[cite: 32].
--   [cite_start]**Code Quality**: Organization, maintainability, and adherence to best practices[cite: 33, 39].
--   [cite_start]**User Experience**: Quality of the user interface design and overall user experience[cite: 34].
--   [cite_start]**Error Handling**: Implementation of error handling and input validation[cite: 35].
--   [cite_start]**Data Management**: Efficient data handling and database design[cite: 36].
--   [cite_start]**Accuracy**: Accuracy of all calculations[cite: 37].
--   [cite_start]**Data Export**: Proper functionality for generating and exporting reports[cite: 38].
