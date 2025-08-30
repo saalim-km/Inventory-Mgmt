@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import cookieParser from 'cookie-parser'; 
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './middlewares/error-handler.middleware';
 import { ResponseInterceptor } from './utils/response-handler';
@@ -14,7 +14,6 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-
 
   app.useGlobalPipes(
     new ValidationPipe({
