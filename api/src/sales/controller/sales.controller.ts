@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Query,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -18,28 +19,36 @@ import {
 } from '../dto/get-sales.dto';
 import { AuthGuard } from 'src/utils/guards/auth.guard';
 import type { Response } from 'express';
+import type { CustomRequest } from 'src/utils/guards/auth.guard';
 
 @Controller('sale')
 export class SalesController {
   constructor(private _salesService: SalesService) {}
+
   @Post()
   @UseGuards(AuthGuard)
-  async create(@Body() dto: CreateOrderDto) {
-    const data = await this._salesService.create(dto);
+  async create(@Body() dto: CreateOrderDto, @Req() req: CustomRequest) {
+    const input = { ...dto, userId: req.user._id };
+    const data = await this._salesService.create(input);
     return { message: SUCCESS_MESSAGES.ORDER_PLACED, data };
   }
 
   @Get()
   @UseGuards(AuthGuard)
-  async get(@Query() dto: GetSalesQueryDto) {
-    const data = await this._salesService.get(dto);
+  async get(@Query() dto: GetSalesQueryDto, @Req() req: CustomRequest) {
+    const input = { ...dto, userId: req.user._id };
+    const data = await this._salesService.get(input);
     return { message: SUCCESS_MESSAGES.DATA_RETRIEVED, data };
   }
 
   @Get('daterange')
   @UseGuards(AuthGuard)
-  async getSalesReportByDateRange(@Query() dto: GetSalesReportDto) {
-    const data = await this._salesService.generateSalesReport(dto);
+  async getSalesReportByDateRange(
+    @Query() dto: GetSalesReportDto,
+    @Req() req: CustomRequest,
+  ) {
+    const input = { ...dto, userId: req.user._id };
+    const data = await this._salesService.generateSalesReport(input);
     return { message: SUCCESS_MESSAGES.SALES_REPORT_GENERATED, data };
   }
 

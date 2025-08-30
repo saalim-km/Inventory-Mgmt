@@ -5,6 +5,14 @@ import { toast } from "sonner";
 import { useFormik } from "formik";
 import { useLocation } from "react-router-dom";
 import { AxiosError } from "axios";
+import { 
+  CreditCard, 
+  Wallet, 
+  Banknote, 
+  Smartphone, 
+  Truck,
+  DollarSign
+} from "lucide-react";
 import type { ICustomer, IItem, ISale, TableColumn } from "../types/auth.type";
 import {
   addSale,
@@ -29,21 +37,29 @@ export const SaleManagement = () => {
   const [items, setItems] = useState<IItem[]>([]);
   const [totalDataCount, setTotalDataCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2;
+  const itemsPerPage = 10;
   const location = useLocation();
+
+  // Payment types with icons
+  const paymentTypes = [
+    { value: "cash", label: "Cash", icon: <Banknote className="w-4 h-4 mr-2" /> },
+    { value: "upi", label: "UPI", icon: <Smartphone className="w-4 h-4 mr-2" /> },
+    { value: "card", label: "Credit/Debit Card", icon: <CreditCard className="w-4 h-4 mr-2" /> },
+    { value: "bank_transfer", label: "Bank Transfer", icon: <Wallet className="w-4 h-4 mr-2" /> },
+    { value: "cod", label: "Cash on Delivery", icon: <Truck className="w-4 h-4 mr-2" /> },
+  ];
 
   useEffect(() => {
     async function fetchSales() {
       try {
         const response = await fetchSale({
           limit: itemsPerPage,
-          page : currentPage
+          page: currentPage
         });
-        console.log(response);
         setSales(response.data.data);
         setTotalDataCount(response.data.total);
       } catch (error) {
-        handleError(error)
+        handleError(error);
       }
     }
     fetchSales();
@@ -55,7 +71,7 @@ export const SaleManagement = () => {
         const response = await fetchCustomer({ page: 1, limit: 100 });
         setCustomers(response.data.data);
       } catch (error) {
-        handleError(error)
+        handleError(error);
       }
     }
     fetchCustomers();
@@ -67,7 +83,7 @@ export const SaleManagement = () => {
         const response = await fetchItems({ page: 1, limit: 100 });
         setItems(response.data.data);
       } catch (error) {
-        handleError(error)
+        handleError(error);
       }
     }
     fetchItemsData();
@@ -77,6 +93,7 @@ export const SaleManagement = () => {
     initialValues: {
       date: null as Date | null,
       customerName: "",
+      paymentType: "cash",
       items: [] as {
         name: string;
         quantity: number;
@@ -95,15 +112,18 @@ export const SaleManagement = () => {
         const saleData: Omit<ISale, "_id"> = {
           date: values.date,
           customerName: values.customerName,
+          paymentType: values.paymentType,
           items: values.items,
         };
+        
         try {
           const response = await addSale(saleData);
-          setSales((prev)=> [response.data,...prev])
+          setSales((prev) => [response.data, ...prev]);
+          setTotalDataCount(prev => prev + 1);
           toast.success(response.message);
           resetForm();
         } catch (error) {
-          handleError(error)
+          handleError(error);
         }
       } catch (error) {
         toast.error(
@@ -146,6 +166,7 @@ export const SaleManagement = () => {
   const handleRemoveItem = (item: string) => {
     const filtered = formik.values.items.filter((i) => i.name !== item);
     formik.setFieldValue("items", filtered);
+    
   };
 
   const saleColumns: TableColumn<ISale>[] = [
@@ -157,6 +178,14 @@ export const SaleManagement = () => {
     {
       key: "customerName",
       header: "Customer",
+    },
+    {
+      key: "paymentType",
+      header: "Payment",
+      render: (value) => {
+        const payment = paymentTypes.find(p => p.value === value);
+        return payment ? payment.label : value;
+      }
     },
     {
       key: "items",
@@ -174,191 +203,230 @@ export const SaleManagement = () => {
     },
   ];
 
+  const totalAmount = formik.values.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
   return (
     <DashboardLayout>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Sale Record</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <form onSubmit={formik.handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <DatePicker
-                  selected={formik.values.date}
-                  onChange={(date) => formik.setFieldValue("date", date)}
-                  placeholder="Select date"
-                />
-                {formik.touched.date && formik.errors.date && (
-                  <p className="text-sm text-red-500">{formik.errors.date}</p>
-                )}
-              </div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-800">Sales Management</h1>
+          <p className="text-gray-600">Record and manage sales transactions</p>
+        </div>
 
-              <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="customerName">Customer</Label>
-                <Select
-                  value={formik.values.customerName}
-                  onValueChange={(value) =>
-                    formik.setFieldValue("customerName", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customers.map((customer) => (
-                      <SelectItem key={customer._id} value={customer.name}>
-                        {customer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formik.touched.customerName && formik.errors.customerName && (
-                  <p className="text-sm text-red-500">
-                    {formik.errors.customerName}
-                  </p>
-                )}
-              </div>
+        <Card className="w-full border-0 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
+            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
+              <DollarSign className="w-5 h-5 mr-2 text-blue-600" />
+              New Sale Record
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-6">
+            <form onSubmit={formik.handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Date Picker */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Date</Label>
+                  <DatePicker
+                    selected={formik.values.date}
+                    onChange={(date) => formik.setFieldValue("date", date)}
+                    placeholder="Select date"
+                    className="w-full"
+                  />
+                  {formik.touched.date && formik.errors.date && (
+                    <p className="text-sm text-red-500">{formik.errors.date}</p>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="items">Add Item</Label>
-                <Select onValueChange={handleAddItem}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an item" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {items.map((item) => (
-                      <SelectItem key={item._id} value={item.name}>
-                        {item.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formik.touched.items &&
-                  typeof formik.errors.items === "string" && (
+                {/* Customer Select */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Customer</Label>
+                  <Select
+                    value={formik.values.customerName}
+                    onValueChange={(value) =>
+                      formik.setFieldValue("customerName", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full text-left">
+                      <SelectValue placeholder="Select customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((customer) => (
+                        <SelectItem key={customer._id} value={customer.name}>
+                          {customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formik.touched.customerName && formik.errors.customerName && (
                     <p className="text-sm text-red-500">
-                      {formik.errors.items}
+                      {formik.errors.customerName}
                     </p>
                   )}
-              </div>
-            </div>
+                </div>
 
-            {/* Selected Items Table */}
-            {formik.values.items.length > 0 && (
-              <div className="border rounded-lg p-4 bg-muted/50">
-                <h4 className="font-semibold mb-4 text-base">Selected Items</h4>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse">
-                    <thead className="bg-muted text-left">
-                      <tr>
-                        <th className="px-4 py-3 font-medium">Item</th>
-                        <th className="px-4 py-3 font-medium">
-                          Available Stock
-                        </th>
-                        <th className="px-4 py-3 text-center font-medium">
-                          Quantity
-                        </th>
-                        <th className="px-4 py-3 text-right font-medium">
-                          Unit Price (₹)
-                        </th>
-                        <th className="px-4 py-3 text-right font-medium">
-                          Total (₹)
-                        </th>
-                        <th className="px-4 py-3 text-center font-medium">
-                          Action
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {formik.values.items.map((item, index) => (
-                        <tr
-                          key={item.name}
-                          className={
-                            index % 2 === 0 ? "bg-background" : "bg-muted/30"
-                          }
-                        >
-                          <td className="px-4 py-3">{item.name}</td>
-                          <td className="px-4 py-3">{item.stock}</td>
-                          <td className="px-4 py-3 text-center">
-                            <div className="flex items-center justify-center space-x-2">
-                              <Button
-                                disabled={item.quantity === 1}
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  handleQuantityChange(item.name, -1)
-                                }
-                              >
-                                −
-                              </Button>
-                              <span className="w-8 text-center">
-                                {item.quantity}
-                              </span>
-                              <Button
-                                disabled={item.quantity === item.stock}
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  handleQuantityChange(item.name, 1)
-                                }
-                              >
-                                +
-                              </Button>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            ₹ {item.price.toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3 text-right font-medium">
-                            ₹ {(item.price * item.quantity).toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleRemoveItem(item.name)}
-                            >
-                              Remove
-                            </Button>
-                          </td>
-                        </tr>
+                {/* Payment Type Select */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Payment Type</Label>
+                  <Select
+                    value={formik.values.paymentType}
+                    onValueChange={(value) =>
+                      formik.setFieldValue("paymentType", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select payment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentTypes.map((payment) => (
+                        <SelectItem key={payment.value} value={payment.value}>
+                          <div className="flex items-center">
+                            {payment.icon}
+                            {payment.label}
+                          </div>
+                        </SelectItem>
                       ))}
-                    </tbody>
-                  </table>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="text-right font-semibold text-lg mt-4 p-4 bg-muted rounded-md">
-                  Grand Total: ₹{" "}
-                  {formik.values.items
-                    .reduce((sum, i) => sum + i.price * i.quantity, 0)
-                    .toFixed(2)}
+
+                {/* Item Select */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Add Item</Label>
+                  <Select onValueChange={handleAddItem}>
+                    <SelectTrigger className="w-full text-left">
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {items.map((item) => (
+                        <SelectItem 
+                          key={item._id} 
+                          value={item.name}
+                          disabled={item.quantity <= 0}
+                        >
+                          <div className="flex justify-between items-center w-full">
+                            <span>{item.name}</span>
+                            <span className="text-sm text-gray-500">
+                              Stock: {item.quantity}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            )}
 
-            <Button type="submit" className="w-full md:w-auto">
-              Save Sale
-            </Button>
-          </form>
+              {/* Selected Items Table */}
+              {formik.values.items.length > 0 && (
+                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <h4 className="font-semibold mb-4 text-base text-gray-800">Selected Items</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead className="bg-gray-100 text-left">
+                        <tr>
+                          <th className="px-4 py-3 font-medium text-gray-700">Item</th>
+                          <th className="px-4 py-3 font-medium text-gray-700">Stock</th>
+                          <th className="px-4 py-3 text-center font-medium text-gray-700">Quantity</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-700">Unit Price</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-700">Total</th>
+                          <th className="px-4 py-3 text-center font-medium text-gray-700">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {formik.values.items.map((item, index) => (
+                          <tr
+                            key={item.name}
+                            className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                          >
+                            <td className="px-4 py-3 text-gray-800">{item.name}</td>
+                            <td className="px-4 py-3 text-gray-600">{item.stock}</td>
+                            <td className="px-4 py-3 text-center">
+                              <div className="flex items-center justify-center space-x-2">
+                                <Button
+                                  disabled={item.quantity === 1}
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleQuantityChange(item.name, -1)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  −
+                                </Button>
+                                <span className="w-8 text-center font-medium text-gray-800">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  disabled={item.quantity === item.stock}
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleQuantityChange(item.name, 1)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-800">
+                              ₹{item.price.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3 text-right font-medium text-gray-800">
+                              ₹{(item.price * item.quantity).toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRemoveItem(item.name)}
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                              >
+                                Remove
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex justify-between items-center mt-4 p-4 bg-blue-50 rounded-md border border-blue-200">
+                    <div className="text-sm text-blue-700">
+                      Payment: {paymentTypes.find(p => p.value === formik.values.paymentType)?.label}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-blue-800">
+                        Grand Total: ₹{totalAmount.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          <div className="pt-6 border-t">
-            <h3 className="font-semibold text-lg mb-4">Sales List</h3>
-            <ReusableTable
-              currentPage={currentPage}
-              columns={saleColumns}
-              data={sales}
-              itemsPerPage={itemsPerPage}
-              onPageChange={(page) => {
-                setCurrentPage(page);
-              }}
-              totalItems={totalDataCount}
-            />
-          </div>
-        </CardContent>
-      </Card>
+              <Button 
+                type="submit" 
+                className="bg-blue-600 hover:bg-blue-700"
+                disabled={formik.values.items.length === 0}
+              >
+                Save Sale Record
+              </Button>
+            </form>
+
+            <div className="pt-6 border-t border-gray-200">
+              <h3 className="font-semibold text-lg mb-4 text-gray-800">Sales History</h3>
+              <ReusableTable
+                currentPage={currentPage}
+                columns={saleColumns}
+                data={sales}
+                itemsPerPage={itemsPerPage}
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                }}
+                totalItems={totalDataCount}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </DashboardLayout>
   );
 };

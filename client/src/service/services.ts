@@ -49,7 +49,7 @@ export const deleteItem = async (id: string) => {
 
 export const fetchItems = async (
     options: {
-        limit: number; page: number;
+        limit: number; page: number;search?:string
     }
 ) => {
     const response = await AxiosInstance.get("/item", {

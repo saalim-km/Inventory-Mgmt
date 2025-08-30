@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Menu, Users, Package, DollarSign, FileText, Download } from "lucide-react";
+import { Menu, Users, Package, DollarSign, FileText, Download , Store, ChevronLeft } from "lucide-react";
 import { Button } from "./button";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 
-// Define types for sidebar items
 type SidebarItem = {
   id: string;
   label: string;
@@ -17,31 +16,31 @@ const sidebarItems: SidebarItem[] = [
   {
     id: "customers",
     label: "Customer Management",
-    icon: <Users className="w-5 h-5 mr-2" />,
+    icon: <Users className="w-5 h-5" />,
     path: "/",
   },
   {
     id: "items",
     label: "Item Management",
-    icon: <Package className="w-5 h-5 mr-2" />,
+    icon: <Package className="w-5 h-5" />,
     path: "/items",
   },
   {
     id: "sales",
     label: "Sales",
-    icon: <DollarSign className="w-5 h-5 mr-2" />,
+    icon: <DollarSign className="w-5 h-5" />,
     path: "/sales",
   },
   {
     id: "report",
     label: "Report",
-    icon: <FileText className="w-5 h-5 mr-2" />,
+    icon: <FileText className="w-5 h-5" />,
     path: "/report",
   },
   {
     id: "export",
     label: "Export",
-    icon: <Download className="w-5 h-5 mr-2" />,
+    icon: <Download className="w-5 h-5" />,
     path: "/export",
   },
 ];
@@ -54,41 +53,61 @@ export const Sidebar = () => {
   return (
     <aside
       className={`${
-        isSidebarOpen ? "w-64" : "w-16"
-      } bg-gray-800 dark:bg-gray-800 shadow-md transition-all duration-300 flex flex-col h-screen`}
+        isSidebarOpen ? "w-64" : "w-20"
+      } bg-white dark:bg-gray-800 shadow-md transition-all duration-300 flex flex-col h-screen border-r border-gray-200`}
     >
-      <div className="p-4 flex items-center justify-between">
-        <h2
-          className={`text-xl font-bold text-gray-800 dark:text-white ${
-            !isSidebarOpen && "hidden"
-          }`}
+      {/* Header */}
+      <div className="p-4 flex items-center justify-between border-b border-gray-100">
+        <div className={`flex items-center ${!isSidebarOpen && "hidden"}`}>
+          <Store className="w-8 h-8 text-blue-600 mr-2" />
+          <h2 className="text-xl font-medium text-gray-800">
+            Inventory Manager
+          </h2>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={toggleSidebar}
+          className="rounded-full hover:bg-gray-100"
         >
-          Dashboard
-        </h2>
-        <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-          <Menu className="w-6 h-6 text-white" />
+          <ChevronLeft className={`w-5 h-5 text-gray-600 transition-transform ${!isSidebarOpen && "rotate-180"}`} />
         </Button>
       </div>
-      <Separator />
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      
+      {/* Navigation Items */}
+      <nav className="flex-1 p-3">
+        <ul className="space-y-1">
           {sidebarItems.map((item) => (
             <li key={item.id}>
               <NavLink to={item.path}>
                 {({ isActive }) => (
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    className="w-full justify-start text-white"
+                  <div
+                    className={`flex items-center p-3 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
                   >
-                    {item.icon}
-                    {isSidebarOpen && <span>{item.label}</span>}
-                  </Button>
+                    <div className={`${isActive ? "text-blue-600" : "text-gray-500"}`}>
+                      {item.icon}
+                    </div>
+                    {isSidebarOpen && (
+                      <span className="ml-3 font-medium">{item.label}</span>
+                    )}
+                  </div>
                 )}
               </NavLink>
             </li>
           ))}
         </ul>
       </nav>
+      
+      {/* Footer with version info */}
+      {isSidebarOpen && (
+        <div className="p-4 border-t border-gray-100 text-xs text-gray-400">
+          v1.0.0
+        </div>
+      )}
     </aside>
   );
 };

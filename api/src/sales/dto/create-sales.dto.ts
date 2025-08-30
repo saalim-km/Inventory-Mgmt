@@ -6,9 +6,12 @@ import {
   Min,
   IsNumber,
   IsMongoId,
-  ArrayMinSize
+  ArrayMinSize,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export type TPaymentType = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'cod';
 
 class ItemDto {
   @IsMongoId()
@@ -36,6 +39,11 @@ export class CreateOrderDto {
   @IsDateString()
   date: string;
 
+  @IsEnum(['cash', 'upi', 'card', 'bank_transfer', 'cod'], {
+    message: 'paymentType must be one of: cash, upi, card, bank_transfer, cod',
+  })
+  paymentType: TPaymentType;
+  
   @ValidateNested({ each: true })
   @Type(() => ItemDto)
   @ArrayMinSize(1)

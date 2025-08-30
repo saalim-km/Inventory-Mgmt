@@ -1,3 +1,5 @@
+export type TPaymentType = "cash" | "upi" | "card" | "bank_transfer" | "cod"
+
 export interface signupInput {
     name : string;
     email : string;
@@ -40,6 +42,7 @@ export interface IItem {
 export interface ISale {
     _id : string;
     date: Date,
+    paymentType : any,
     items: {
         name : string,
         quantity : number,

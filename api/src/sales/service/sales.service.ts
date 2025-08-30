@@ -56,8 +56,8 @@ export class SalesService {
     const skip = (page - 1) * limit;
 
     const [sales, count] = await Promise.all([
-      this._salesModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
-      this._salesModel.countDocuments(),
+      this._salesModel.find({userId : (dto as any).userId}).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      this._salesModel.countDocuments({userId : (dto as any).userId}),
     ]);
 
     return {
@@ -72,10 +72,10 @@ export class SalesService {
 
     const [sales, count] = await Promise.all([
       this._salesModel
-        .find({ date: { $gte: from, $lte: to } })
+        .find({ date: { $gte: from, $lte: to } , userId : (dto as any).userId})
         .skip(skip)
         .limit(limit),
-      this._salesModel.countDocuments({ date: { $gte: from, $lte: to } }),
+      this._salesModel.countDocuments({ date: { $gte: from, $lte: to } , userId : (dto as any).userId}),
     ]);
 
     return {

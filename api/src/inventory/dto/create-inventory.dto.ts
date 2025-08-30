@@ -1,9 +1,15 @@
-import { IsString, IsNumber, Min, MaxLength, IsOptional } from "class-validator";
-import { IsValidName } from "src/utils/custom-decorators";
+import {
+  IsString,
+  IsNumber,
+  Min,
+  MaxLength,
+  IsOptional,
+  IsMongoId,
+} from 'class-validator';
+import { IsValidName } from 'src/utils/custom-decorators';
 
 export class CreateInventoryDto {
   @IsString()
-  @IsValidName()
   @MaxLength(20)
   name: string;
 
@@ -17,6 +23,6 @@ export class CreateInventoryDto {
   quantity: number;
 
   @IsNumber()
-  @Min(50 , {message : "Min of 50 rupees should be added to the price"})
+  @Min(50, { message: 'Min of 50 rupees should be added to the price' })
   price: number;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, SkipBack } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -20,11 +20,14 @@ type Column<T> = {
   key: keyof T | string;
   header: string;
   render?: (value: T[keyof T], row: T) => React.ReactNode;
+  className?: string;
 };
 
 type Action<T> = {
   label: string;
   onClick: (row: T) => void;
+  icon?: React.ReactNode;
+  variant?: "default" | "destructive";
 };
 
 type ReusableTableProps<T> = {
@@ -35,6 +38,8 @@ type ReusableTableProps<T> = {
   totalItems: number;
   onPageChange: (page: number) => void;
   currentPage: number;
+  isLoading?: boolean;
+  emptyMessage?: string;
 };
 
 export function ReusableTable<T>({
@@ -45,6 +50,8 @@ export function ReusableTable<T>({
   totalItems,
   onPageChange,
   currentPage,
+  isLoading = false,
+  emptyMessage = "No data available",
 }: ReusableTableProps<T>) {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -101,17 +108,69 @@ export function ReusableTable<T>({
     }
   }, [totalItems, itemsPerPage, currentPage, totalPages, goToPage]);
 
+  // Render loading skeletons
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow>
+                {columns.map((column) => (
+                  <TableHead 
+                    key={String(column.key)} 
+                    className="text-gray-700 font-medium py-3"
+                  >
+                    {column.header}
+                  </TableHead>
+                ))}
+                {actions.length > 0 && (
+                  <TableHead className="w-[80px] text-gray-700 font-medium py-3">
+                    Actions
+                  </TableHead>
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: itemsPerPage }).map((_, index) => (
+                <TableRow key={index} className="hover:bg-gray-50/50">
+                  {columns.map((column) => (
+                    <TableCell key={String(column.key)} className="py-3">
+                      <SkipBack className="h-4 w-3/4" />
+                    </TableCell>
+                  ))}
+                  {actions.length > 0 && (
+                    <TableCell className="py-3">
+                      <SkipBack className="h-8 w-8 rounded-full" />
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="border rounded-md">
+      <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-gray-50">
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={String(column.key)}>{column.header}</TableHead>
+                <TableHead 
+                  key={String(column.key)} 
+                  className="text-gray-700 font-medium py-3"
+                >
+                  {column.header}
+                </TableHead>
               ))}
               {actions.length > 0 && (
-                <TableHead className="w-[100px]">Actions</TableHead>
+                <TableHead className="w-[80px] text-gray-700 font-medium py-3">
+                  Actions
+                </TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -120,35 +179,56 @@ export function ReusableTable<T>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                  className="text-center py-10"
+                  className="text-center py-10 text-gray-500"
                 >
-                  No data available
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="bg-gray-100 rounded-full p-3 mb-3">
+                      <MoreHorizontal className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <p className="text-sm">{emptyMessage}</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               data?.map((row, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} className="hover:bg-gray-50/50 border-b border-gray-100 last:border-b-0">
                   {columns.map((column) => (
-                    <TableCell key={String(column.key)}>
+                    <TableCell 
+                      key={String(column.key)} 
+                      className={`py-3 ${column.className || ''}`}
+                    >
                       {column.render
                         ? column.render(row[column.key as keyof T], row)
                         : String(row[column.key as keyof T] ?? "")}
                     </TableCell>
                   ))}
                   {actions.length > 0 && (
-                    <TableCell>
+                    <TableCell className="py-3">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-full hover:bg-gray-200"
+                          >
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent 
+                          align="end" 
+                          className="bg-white rounded-md shadow-lg p-1 min-w-[150px] border border-gray-200"
+                        >
                           {actions.map((action, idx) => (
                             <DropdownMenuItem
                               key={idx}
                               onClick={() => action.onClick(row)}
+                              className={`flex items-center px-3 py-2 rounded-md text-sm cursor-pointer ${
+                                action.variant === "destructive" 
+                                  ? "text-red-600 hover:bg-red-50" 
+                                  : "text-gray-700 hover:bg-gray-100"
+                              }`}
                             >
+                              {action.icon && <span className="mr-2">{action.icon}</span>}
                               {action.label}
                             </DropdownMenuItem>
                           ))}
@@ -164,21 +244,32 @@ export function ReusableTable<T>({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
-            items
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1">
+          <p className="text-sm text-gray-600">
+            Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+            <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{" "}
+            <span className="font-medium">{totalItems}</span> results
           </p>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(1)}
+              disabled={currentPage === 1}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
+              className="h-8 w-8 p-0"
             >
-              Previous
+              <ChevronLeft className="h-4 w-4" />
             </Button>
+            
             {getPaginationRange().map((page, index) => (
               <Button
                 key={index}
@@ -186,17 +277,29 @@ export function ReusableTable<T>({
                 size="sm"
                 onClick={() => typeof page === "number" && goToPage(page)}
                 disabled={typeof page !== "number"}
+                className="h-8 w-8 p-0 min-w-8"
               >
                 {page}
               </Button>
             ))}
+            
             <Button
               variant="outline"
               size="sm"
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="h-8 w-8 p-0"
             >
-              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

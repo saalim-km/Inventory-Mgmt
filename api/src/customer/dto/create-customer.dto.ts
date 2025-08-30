@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, Matches, IsMongoId } from 'class-validator';
 
 export class CreateCustomerDto {
   @IsString()

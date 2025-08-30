@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CustomerService } from '../service/customer.service';
 import { CreateCustomerDto } from '../dto/create-customer.dto';
@@ -15,6 +16,7 @@ import { UpdateCustomerDto } from '../dto/update-customer.dto';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { PaginationDto } from '../dto/get-customer.dto';
 import { AuthGuard } from 'src/utils/guards/auth.guard';
+import type {CustomRequest} from 'src/utils/guards/auth.guard';
 
 @Controller('customer')
 export class CustomerController {
@@ -23,17 +25,20 @@ export class CustomerController {
   // Create a customer
   @Post()
   @UseGuards(AuthGuard)
-  async create(@Body() dto: CreateCustomerDto) {
-    const customer = await this.customerService.create(dto);
+  async create(@Body() dto: CreateCustomerDto , @Req() req : CustomRequest) {
+    const userData = {...dto,userId : req.user._id}
+    const customer = await this.customerService.create(userData);
     return { message: 'Customer created successfully', data: customer };
   }
+
 
   // Get all customers (optional search by name)
   @Get()
   @UseGuards(AuthGuard)
-  async findAll(@Query() query : PaginationDto) {
-    console.log('query in all customer find',query);
-    const customers = await this.customerService.findAll(query);
+  async findAll(@Query() query : PaginationDto , @Req() req : CustomRequest) {
+    const input = {...query,userId : req.user._id};
+    console.log(input);
+    const customers = await this.customerService.findAll(input);
     return { message: 'Customer list fetched successfully', data: customers };
   }
 

@@ -24,8 +24,9 @@ export class InventoryService {
   ) {}
 
   async create(input: CreateInventoryDto) {
-    const isItemExists = await this._inventoryModel.findOne({
-      name: new RegExp(input.name.trim(), 'i'),
+    console.log(input);
+    const isItemExists = await this._inventoryModel.findOne({userId : (input as any).userId,
+      name: new RegExp(input.name.trim()),
     });
     if (isItemExists)
       throw new CustomError(
@@ -42,12 +43,16 @@ export class InventoryService {
 
     const filter: FilterQuery<InventoryDocument> = search
       ? {
+          userId: (input as any).userId,
           $or: [
             { name: new RegExp(search, 'i') },
             { description: new RegExp(search, 'i') },
           ],
         }
-      : {};
+      : { userId: (input as any).userId };
+
+      console.log(filter);
+      
     const [items, count] = await Promise.all([
       this._inventoryModel
         .find(filter)
@@ -55,7 +60,7 @@ export class InventoryService {
         .skip(skip)
         .limit(limit)
         .exec(),
-      this._inventoryModel.countDocuments(),
+      this._inventoryModel.countDocuments(filter),
     ]);
 
     return {
@@ -111,8 +116,8 @@ export class InventoryService {
 
     // Fetch everything once
     const [sales, allItems] = await Promise.all([
-      this._salesModel.find(),
-      this._inventoryModel.find(),
+      this._salesModel.find({userId : (dto as any).userId}),
+      this._inventoryModel.find({userId : (dto as any).userId}),
     ]);
 
     const salesCountMap = new Map<string, number>();

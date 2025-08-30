@@ -20,21 +20,30 @@ export const ItemManagement = () => {
   const [totalDataCount, setTotalDataCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
-  const location = useLocation();
 
+  // NEW: for search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const location = useLocation();
   const confirmModal = useConfirmModal();
 
   useEffect(() => {
     const fetchItemList = async () => {
-      const response = await fetchItems({
-        limit: itemsPerPage,
-        page: currentPage,
-      });
-      setItems(response.data.data || []);
-      setTotalDataCount(response.data.total);
+      try {
+        const response = await fetchItems({
+          limit: itemsPerPage,
+          page: currentPage,
+          search: searchQuery,
+        });
+        setItems(response.data.data || []);
+        setTotalDataCount(response.data.total);
+      } catch (error) {
+        handleError(error);
+      }
     };
     fetchItemList();
-  }, [location, currentPage]);
+  }, [location, currentPage, searchQuery]);
 
   const formik = useFormik({
     initialValues: {
@@ -56,13 +65,7 @@ export const ItemManagement = () => {
           setItems((prev) =>
             prev.map((item) =>
               item._id === selectedItem._id
-                ? {
-                    ...item,
-                    name: values.name,
-                    description: values.description,
-                    quantity: values.quantity,
-                    price: values.price,
-                  }
+                ? { ...item, ...values }
                 : item
             )
           );
@@ -80,7 +83,6 @@ export const ItemManagement = () => {
           resetForm();
           setSelectedItem(null);
         } catch (error) {
-          console.log(error);
           handleError(error);
         }
       }
@@ -128,6 +130,26 @@ export const ItemManagement = () => {
             <CardTitle>Item Management</CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Search bar */}
+            <div className="flex gap-2 mb-6">
+              <Input
+                type="text"
+                placeholder="Search items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Button
+                type="button"
+                onClick={() => {
+                  setSearchQuery(searchTerm);
+                  setCurrentPage(1); // reset page on new search
+                }}
+              >
+                Search
+              </Button>
+            </div>
+
+            {/* Add/Edit form */}
             <form onSubmit={formik.handleSubmit} className="space-y-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
@@ -200,6 +222,8 @@ export const ItemManagement = () => {
                   type="button"
                   onClick={() => {
                     setSelectedItem(null);
+                    setSearchQuery('')
+                    setSearchTerm('')
                     formik.resetForm();
                   }}
                   variant="outline"
@@ -209,6 +233,7 @@ export const ItemManagement = () => {
               </div>
             </form>
 
+            {/* Table */}
             <ReusableTable
               currentPage={currentPage}
               columns={columns}

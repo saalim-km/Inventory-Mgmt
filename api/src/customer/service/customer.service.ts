@@ -37,13 +37,13 @@ export class CustomerService {
     console.log(skip, limit);
     const [customers, count] = await Promise.all([
       this._customerModel
-        .find()
+        .find({userId : (query as any).userId})
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .exec(),
-      this._customerModel.countDocuments().exec(),
-    ]);
+      this._customerModel.countDocuments({userId : (query as any).userId}).exec(),
+    ]); 
     return {
       data: customers,
       total: count,

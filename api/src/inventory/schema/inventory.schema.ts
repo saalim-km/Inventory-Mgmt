@@ -1,11 +1,14 @@
 // src/inventory/schemas/inventory.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type InventoryDocument = Inventory & Document;
 
 @Schema({ timestamps: true })
 export class Inventory {
+  @Prop({ type: Types.ObjectId, required: true, ref: 'User'})
+  userId: Types.ObjectId;
+
   @Prop({ required: true , trim : true})
   name: string;
 
