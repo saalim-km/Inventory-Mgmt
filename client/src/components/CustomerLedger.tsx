@@ -15,7 +15,6 @@ import { ReusableTable } from "./Table";
 import { 
   TrendingUp, 
   IndianRupee, 
-  Receipt,
   RefreshCw 
 } from "lucide-react";
 import { Button } from "./ui/button";

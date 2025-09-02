@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Menu, Users, Package, DollarSign, FileText, Download , Store, ChevronLeft } from "lucide-react";
+import { Users, Package, DollarSign, FileText, Download , Store, ChevronLeft } from "lucide-react";
 import { Button } from "./button";
-import { Separator } from "@radix-ui/react-dropdown-menu";
 
 type SidebarItem = {
   id: string;
