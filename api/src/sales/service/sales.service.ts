@@ -102,6 +102,7 @@ export class SalesService {
         (sum, item) => sum + item.price * item.quantity,
         0,
       ),
+      paymentType : sale.paymentType
     }));
 
     return {

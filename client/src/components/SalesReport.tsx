@@ -48,6 +48,10 @@ export const SalesReport = () => {
       header: "Customer",
     },
     {
+      key : 'paymentType',
+      header : "Payment Type"
+    },
+    {
       key: "items",
       header: "Total Amount (₹)",
       render: (_, row) =>

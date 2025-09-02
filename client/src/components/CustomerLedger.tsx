@@ -24,6 +24,7 @@ type LedgerEntry = {
   date: string;
   type: "Sale" | "Payment" | "Return";
   amount: number;
+  paymentType : string
 };
 
 export const CustomerLedger = () => {
@@ -159,6 +160,10 @@ export const CustomerLedger = () => {
       },
     },
     {
+      key : "paymentType",
+      header : "Payment Type"
+    },
+    {
       key: "amount",
       header: "Amount",
       render: (value) => (
@@ -237,34 +242,7 @@ export const CustomerLedger = () => {
                 </div>
               </div>
             </div>
-            
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Receipt className="h-5 w-5 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Payments</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    ₹ {totals.payments.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center">
-                <div className="p-2 bg-amber-100 rounded-lg">
-                  <Receipt className="h-5 w-5 text-amber-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Returns</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    ₹ {totals.returns.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
+          
             
             <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
               <div className="flex items-center">
