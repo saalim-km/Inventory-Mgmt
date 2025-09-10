@@ -7,6 +7,8 @@ import { UpdateOrderDto } from '../dto/update-sales.dto';
 import { CustomError } from 'src/utils/custom-error';
 import { ERROR_MESSAGES, HTTP_STATUS } from 'src/utils/constants';
 import ExcelJS from 'exceljs';
+import nm, { Transporter } from 'nodemailer';
+
 import {
   ExportQueryParamsDto,
   GetSalesQueryDto,
@@ -21,11 +23,21 @@ import type { Response } from 'express';
 
 @Injectable()
 export class SalesService {
+  private transporter: Transporter;
+
   constructor(
     @InjectModel(Sale.name) private _salesModel: Model<SaleDocument>,
     @InjectModel(Inventory.name)
     private _inventoryModel: Model<InventoryDocument>,
-  ) {}
+  ) {
+    this.transporter = nm.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASS,
+      },
+    });
+  }
 
   async create(dto: CreateOrderDto) {
     await Promise.all(
@@ -56,8 +68,12 @@ export class SalesService {
     const skip = (page - 1) * limit;
 
     const [sales, count] = await Promise.all([
-      this._salesModel.find({userId : (dto as any).userId}).sort({ createdAt: -1 }).skip(skip).limit(limit),
-      this._salesModel.countDocuments({userId : (dto as any).userId}),
+      this._salesModel
+        .find({ userId: (dto as any).userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this._salesModel.countDocuments({ userId: (dto as any).userId }),
     ]);
 
     return {
@@ -72,10 +88,13 @@ export class SalesService {
 
     const [sales, count] = await Promise.all([
       this._salesModel
-        .find({ date: { $gte: from, $lte: to } , userId : (dto as any).userId})
+        .find({ date: { $gte: from, $lte: to }, userId: (dto as any).userId })
         .skip(skip)
         .limit(limit),
-      this._salesModel.countDocuments({ date: { $gte: from, $lte: to } , userId : (dto as any).userId}),
+      this._salesModel.countDocuments({
+        date: { $gte: from, $lte: to },
+        userId: (dto as any).userId,
+      }),
     ]);
 
     return {
@@ -102,7 +121,7 @@ export class SalesService {
         (sum, item) => sum + item.price * item.quantity,
         0,
       ),
-      paymentType : sale.paymentType
+      paymentType: sale.paymentType,
     }));
 
     return {
@@ -210,7 +229,7 @@ export class SalesService {
   }
 
   async exportPrint(res: Response, sales: SaleDocument[]) {
-     const html = `
+    const html = `
       <html>
         <head>
           <title>Sales Report</title>
@@ -223,23 +242,65 @@ export class SalesService {
         </head>
         <body>
           <h1>Sales Report</h1>
-          ${sales.map(sale => {
-            const total = sale.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-            return `
+          ${sales
+            .map((sale) => {
+              const total = sale.items.reduce(
+                (sum, i) => sum + i.price * i.quantity,
+                0,
+              );
+              return `
               <div class="sale-entry">
                 <p><strong>Date:</strong> ${new Date(sale.date).toLocaleDateString()}</p>
                 <p><strong>Customer:</strong> ${sale.customerName}</p>
-                <p><strong>Items:</strong> ${sale.items.map(i => `${i.name} (${i.quantity})`).join(", ")}</p>
+                <p><strong>Items:</strong> ${sale.items.map((i) => `${i.name} (${i.quantity})`).join(', ')}</p>
                 <p><strong>Total:</strong> ₹${total.toFixed(2)}</p>
                 <hr />
               </div>
             `;
-          }).join("")}
+            })
+            .join('')}
         </body>
       </html>
     `;
 
-    res.setHeader("Content-Type", "text/html");
+    res.setHeader('Content-Type', 'text/html');
     res.send(html);
+  }
+
+  htmlContentForSale(sales: SaleDocument[]) {
+    return `
+    <html>
+      <head><title>Sales Report</title></head>
+      <body>
+        <h1>Sales Report</h1>
+        ${sales
+          .map((sale) => {
+            const total = sale.items.reduce(
+              (sum, i) => sum + i.price * i.quantity,
+              0,
+            );
+            return `
+              <div>
+                <p><strong>Date:</strong> ${new Date(sale.date).toLocaleDateString()}</p>
+                <p><strong>Customer:</strong> ${sale.customerName}</p>
+                <p><strong>Items:</strong> ${sale.items.map((i) => `${i.name} (${i.quantity})`).join(', ')}</p>
+                <p><strong>Total:</strong> ₹${total.toFixed(2)}</p>
+                <hr />
+              </div>
+            `;
+          })
+          .join('')}
+      </body>
+    </html>
+  `;
+  }
+
+  async sendEmailReport(to, sales: SaleDocument[]) {
+    await this.transporter.sendMail({
+      from: 'Inventory Mgmt',
+      to: to,
+      subject: 'Sales Report',
+      html: this.htmlContentForSale(sales),
+    });
   }
 }

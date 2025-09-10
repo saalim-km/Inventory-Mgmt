@@ -152,3 +152,11 @@ export const getPrintableSalesReport = async (from: string, to: string, customer
         printWindow.print();
     }
 };
+
+export const sendReportAsEmail = async(from: string, to: string,customer : string,email : string)=> {
+    const response = await AxiosInstance.get('/sale/export/email',{
+        params : {from,to,customer,email}
+    })
+
+    return response.data;
+}
