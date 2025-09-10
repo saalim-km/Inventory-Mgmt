@@ -17,6 +17,7 @@ import {
   exportSalesToPDF,
   fetchCustomer,
   getPrintableSalesReport,
+  sendReportAsEmail,
 } from "../service/services";
 import { DatePicker } from "../components/ui/date-picker";
 import { Button } from "../components/ui/button";
@@ -64,6 +65,9 @@ export const ExportPage = () => {
     const to = toDate.toISOString();
     const customer = selectedCustomer !== "all" ? selectedCustomer : undefined;
 
+    if(!customer){
+      return toast.error('Please select a customer to procced.')
+    }
     setIsLoading(prev => ({ ...prev, [type]: true }));
 
     try {
@@ -78,7 +82,8 @@ export const ExportPage = () => {
         toast.success("Print preview generated");
       } else if (type === "email") {
         // Implement email functionality here with email address
-        toast.success(`Report sent to ${email}`);
+        const res = await sendReportAsEmail(from,to,customer,email)
+        toast.success(res.message);
       }
     } catch (error) {
       console.error("Export failed:", error);

@@ -13,6 +13,7 @@ import { CreateOrderDto } from '../dto/create-sales.dto';
 import { SalesService } from '../service/sales.service';
 import { SUCCESS_MESSAGES } from 'src/utils/constants';
 import {
+  ExportAsEmailDto,
   ExportQueryParamsDto,
   GetSalesQueryDto,
   GetSalesReportDto,
@@ -90,5 +91,14 @@ export class SalesController {
     const sales = await this._salesService.getSalesForExport(dto);
     console.log(sales);
     return this._salesService.exportPrint(res, sales);
+  }
+
+  @Get('/export/email')
+  @UseGuards(AuthGuard)
+  async exportAsEmail(@Query() dto : ExportAsEmailDto) {
+    console.log(dto);
+    const sales = await this._salesService.getSalesForExport(dto)
+    await this._salesService.sendEmailReport(dto.email,sales)
+    return {message : SUCCESS_MESSAGES.REPORT_EMAIL_SEND}
   }
 }

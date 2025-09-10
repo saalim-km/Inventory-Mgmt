@@ -11,6 +11,7 @@ export const HTTP_STATUS = {
 };
 
 export const SUCCESS_MESSAGES = {
+  REPORT_EMAIL_SEND : "Report has been send to email",
   ITEM_REPORT_CREATED : "Item report created",
   SALES_REPORT_GENERATED : "Sales report generate",
   REFRESH_TOKEN_SUCCESS: "Session refreshed. You're all set.",
